@@ -15,6 +15,8 @@ contract DEX {
 	/* ========== GLOBAL VARIABLES ========== */
 
 	IERC20 token; //instantiates the imported contract
+	uint256 public totalLiquidity;
+	mapping(uint256 => address) public liquidity;
 
 	/* ========== EVENTS ========== */
 
@@ -70,7 +72,13 @@ contract DEX {
 	 * @return totalLiquidity is the number of LPTs minting as a result of deposits made to DEX contract
 	 * NOTE: since ratio is 1:1, this is fine to initialize the totalLiquidity (wrt to balloons) as equal to eth balance of contract.
 	 */
-	function init(uint256 tokens) public payable returns (uint256) {}
+	function init(uint256 tokens) public payable returns (uint256) {
+		require(totalLiquidity == 0, "DEX: already initialized");
+		totalLiquidity = address(this).balance;
+		liquidity[msg.sender] = totalLiquidity;
+		token.transferFrom(msg.sender, address(this), tokens);
+		return totalLiquidity;
+	}
 
 	/**
 	 * @notice returns yOutput, or yDelta for xInput (or xDelta)
